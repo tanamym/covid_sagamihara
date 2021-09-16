@@ -1,0 +1,57 @@
+library(rvest)
+library(dplyr)
+library(stringr)
+library(lubridate)
+repeat{
+  while(wday(Sys.Date(),label = TRUE)=="月"){
+    path<-"https://www.city.sagamihara.kanagawa.jp/kurashi/kenko/kansenyobo/1019910/1020286.html"
+    RH<-read_html(path)
+    tb<-RH%>%
+      rvest::html_nodes("table")
+    date<-
+      RH%>%
+      html_nodes("p")%>%
+      html_text()%>%
+      data.frame()%>%
+      filter(str_detect(.,"週報（"))%>%
+      rename("Date"=".")%>%
+      mutate(Date=str_remove(Date,"週報（"),
+             Date=str_remove(Date,"現在）"))
+    text<-
+      tb[[7]]%>%
+      rvest::html_nodes("tr")%>%
+      rvest::html_text()%>%
+      strsplit("\n")
+    K<-
+      text[1]%>%
+      data.frame()
+    colnames(K)<-"区名"
+    K<-K%>%
+      filter(str_detect(区名,"区|市外|計"))%>%
+      mutate(区名=str_remove_all(区名," "))
+    N<-
+      text[2]%>%
+      data.frame()
+    colnames(N)<-"count"  
+    N<-N%>%
+      filter(str_detect(count,"[0-9]"))%>%
+      #filter(!str_detect(count,"\\(.+?\\)"))%>%
+      mutate(count=str_remove_all(count," |,|人"))
+    data1<-cbind(K,N)%>%
+      mutate(count=as.numeric(count))%>%
+      mutate(D=paste0("2021年",date$Date[1]))%>%
+      mutate(Date=as.Date(D,"%Y年%m月%d日"))
+    data2<-data.frame()
+    data2<-read.csv("sagamihara.csv",encoding="UTF-8")%>%
+      arrange(desc(Date1))
+    if(data1[1,4]!=data2[1,4]){
+      data3<-rbind(data2,data1)
+      write.csv(data3,"sagamihara.csv.csv",
+                row.names=F,fileEncoding="UTF-8")
+      write.csv(data1,paste0("sagamihara",date$Date[1],".csv"),
+                row.names=F)
+    }
+    
+    sleep(3600)
+  }
+}
