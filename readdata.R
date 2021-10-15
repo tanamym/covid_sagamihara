@@ -3,7 +3,7 @@ library(dplyr)
 library(stringr)
 library(lubridate)
 repeat{
-  while(wday(Sys.Date(),label = TRUE)=="月"){
+  while(wday(Sys.Date(),label = TRUE)=="月"|wday(Sys.Date(),label = TRUE)=="火"){
     path<-"https://www.city.sagamihara.kanagawa.jp/kurashi/kenko/kansenyobo/1019910/1020286.html"
     RH<-read_html(path)
     tb<-RH%>%
@@ -42,16 +42,20 @@ repeat{
       mutate(D=paste0("2021年",date$Date[1]))%>%
       mutate(Date=as.Date(D,"%Y年%m月%d日"))
     data2<-data.frame()
+    data2<-read.csv("sagamihara9月13日.csv")%>%
+      mutate(Date=as.Date(Date))
     data2<-read.csv("sagamihara.csv",encoding="UTF-8")%>%
-      arrange(desc(Date1))
+      mutate(Date=as.Date(Date))%>%
+      arrange(desc(Date))
     if(data1[1,4]!=data2[1,4]){
       data3<-rbind(data2,data1)
-      write.csv(data3,"sagamihara.csv.csv",
+      write.csv(data3,"sagamihara.csv",
                 row.names=F,fileEncoding="UTF-8")
       write.csv(data1,paste0("sagamihara",date$Date[1],".csv"),
                 row.names=F)
+      print("出力しました")
     }
-    
-    sleep(3600)
+    print(Sys.time())
+    Sys.sleep(7200)
   }
 }
