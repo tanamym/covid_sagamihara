@@ -18,7 +18,7 @@ repeat{
       mutate(Date=str_remove(Date,"週報（"),
              Date=str_remove(Date,"現在）"))
     text<-
-      tb[[7]]%>%
+      tb[[5]]%>%
       rvest::html_nodes("tr")%>%
       rvest::html_text()%>%
       strsplit("\n")
