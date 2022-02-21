@@ -36,10 +36,13 @@ repeat{
     N<-N%>%
       filter(str_detect(count,"[0-9]"))%>%
       #filter(!str_detect(count,"\\(.+?\\)"))%>%
-      mutate(count=str_remove_all(count," |,|人"))
+      mutate(count=str_remove_all(count," |,|人"))%>%
+      mutate(count=str_remove_all(count,"[^0-9]"))
+
     data1<-cbind(K,N)%>%
+      mutate(count=str_replace_all(count," ",""))%>%
       mutate(count=as.numeric(count))%>%
-      mutate(D=paste0("2021年",date$Date[1]))%>%
+      mutate(D=paste0("2022年",date$Date[1]))%>%
       mutate(Date=as.Date(D,"%Y年%m月%d日"))
     data2<-data.frame()
     data2<-read.csv("sagamihara9月13日.csv")%>%
